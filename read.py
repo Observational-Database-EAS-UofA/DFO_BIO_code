@@ -55,10 +55,7 @@ def process_chunks(reader, data_lists):
             data_lists['press'].extend(data['PRESPR01'])
             data_lists['psal'].extend(data['PSLTZZ01'])
 
-            # if len(data['depth'].values) > 1:
-            #     data_lists['shallowest_depth'].append(min(data['DEPTH_PRESS'][data['DEPTH_PRESS'] != 0]))
-            # else:
-            data_lists['shallowest_depth'].append(min(data['depth']))
+            data_lists['shallowest_depth'].append(min(data['depth'][data['depth'] != 0]))
             data_lists['deepest_depth'].append(max(data['depth']))
             data_lists['parent_index'].extend([i] * len(data['depth']))
             i += 1
@@ -100,7 +97,6 @@ def create_dataset(data_lists, string_attrs, data_path, save_path):
 
 
 def read_DFO_BIO(data_path, save_path):
-    print(data_path)
     string_attrs, measurements_attrs, data_lists, i = initialize_variables()
 
     with pd.read_csv(data_path, chunksize=10 ** 6, low_memory=False, skiprows=[1]) as reader:
