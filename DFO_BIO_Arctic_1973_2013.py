@@ -4,12 +4,12 @@ from datetime import datetime
 import numpy as np
 import os
 
-
 class DFO_BIOReader:
-    def __init__(self, data_path, save_path):
+    def __init__(self, data_path, save_path, dataset_name):
         self.header = None
         self.data_path = data_path
         self.save_path = save_path
+        self.dataset_name = dataset_name
 
     def initialize_variables(self):
         string_attrs = ['platform', 'chief_scientist', 'cruise_name', 'orig_cruise_id', 'orig_profile_id', 'lat',
@@ -65,11 +65,6 @@ class DFO_BIOReader:
                 i += 1
 
     def create_dataset(self, data_lists, string_attrs):
-        os.chdir(self.data_path[:self.data_path.rfind("/")])
-        os.chdir("../")
-        dataset = os.getcwd()
-        dataset = dataset[dataset.rfind("/") + 1:]
-
         if not os.path.isdir(self.save_path):
             os.mkdir(self.save_path)
         os.chdir(self.save_path)
@@ -93,7 +88,7 @@ class DFO_BIOReader:
                 psal=xr.DataArray(data_lists['psal'], dims=['obs']),
             ),
             attrs=dict(
-                dataset_name=dataset,
+                dataset_name=self.dataset_name,
                 creation_date=str(datetime.now().strftime("%Y-%m-%d %H:%M")),
             ),
         )
@@ -116,15 +111,15 @@ class DFO_BIOReader:
 
 
 def main(data_paths, save_path):
-    for path in data_paths:
-        dfo_bio_reader = DFO_BIOReader(path, save_path)
+    for path, dataset_name in data_paths.items():
+        dfo_bio_reader = DFO_BIOReader(path, save_path, dataset_name)
         dfo_bio_reader.run()
 
 
 if __name__ == '__main__':
-    data_list = [
-        '/home/novaisc/workspace/obs_database/AW_CAA/CTD_DATA/DFO_BIO/DFO_BIO_1973_2022/original_data/bio_historical_arctic_ctd_1921_2d43_ff8c.csv',
-        '/home/novaisc/workspace/obs_database/AW_CAA/CTD_DATA/DFO_BIO/DFO_BIO_Barrow_1998_2010/original_data/bio_barrow_strait_program_ctd_4450_976d_79dd.csv',
-        '/home/novaisc/workspace/obs_database/AW_CAA/CTD_DATA/DFO_BIO/DFO_BIO_WGreenland_1989_1994/original_data/bio_historical_west_greenland_ctd_dba9_5eb4_a3f0.csv']
-    save_directory = '/home/novaisc/workspace/obs_database/AW_CAA/CTD_DATA/DFO_BIO/ncfiles_raw'
+    data_list = {
+        '/mnt/storage6/caio/AW_CAA/CTD_DATA/DFO_BIO/DFO_BIO_1973_2022/original_data/bio_historical_arctic_ctd_1921_2d43_ff8c.csv': 'DFO_BIO_1973_2022',
+        '/mnt/storage6/caio/AW_CAA/CTD_DATA/DFO_BIO/DFO_BIO_Barrow_1998_2010/original_data/bio_barrow_strait_program_ctd_4450_976d_79dd.csv': 'DFO_BIO_Barrow_1998_2010',
+        '/mnt/storage6/caio/AW_CAA/CTD_DATA/DFO_BIO/DFO_BIO_WGreenland_1989_1994/original_data/bio_historical_west_greenland_ctd_dba9_5eb4_a3f0.csv': 'DFO_BIO_WGreenland_1989_1994'}
+    save_directory = '/mnt/storage6/caio/AW_CAA/CTD_DATA/DFO_BIO/ncfiles_raw'
     main(data_list, save_directory)
