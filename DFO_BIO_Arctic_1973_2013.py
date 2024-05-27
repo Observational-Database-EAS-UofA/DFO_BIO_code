@@ -51,12 +51,15 @@ class DFO_BIOReader:
             "lat",
             "lon",
             "datestr",
+            "depth_row_size",
+            "press_row_size",
+            "temp_row_size",
+            "psal_row_size",
         ]
         additional_attrs = [
             "shallowest_depth",
             "deepest_depth",
             "timestamp",
-            "parent_index",
         ]
         obs_attrs = ["depth", "press", "temp", "psal"]
         data_lists = {attr: [] for attr in string_attrs + obs_attrs + additional_attrs}
@@ -96,7 +99,6 @@ class DFO_BIOReader:
         - reader: Pandas reader object to read chunks of the CSV file.
         - data_lists: Dictionary to store extracted data.
         """
-        i = 0
         for chunk in reader:
             grouped_df = chunk.groupby(
                 [
@@ -141,8 +143,11 @@ class DFO_BIOReader:
 
                 data_lists["shallowest_depth"].append(min(data["depth"][data["depth"] != 0]))
                 data_lists["deepest_depth"].append(max(data["depth"]))
-                data_lists["parent_index"].extend([i] * len(data["depth"]))
-                i += 1
+
+                data_lists["depth_row_size"].append(len(data["depth"]))
+                data_lists["press_row_size"].append(len(data["PRESPR01"]))
+                data_lists["temp_row_size"].append(len(data["TEMPPR01"]))
+                data_lists["psal_row_size"].append(len(data["PSLTZZ01"]))
 
     def create_dataset(self, data_lists, string_attrs):
         """
@@ -167,7 +172,7 @@ class DFO_BIOReader:
                 **{
                     attr: xr.DataArray(data_lists[attr], dims=["profile"])
                     for attr in string_attrs
-                    if attr not in ["lat", "lon", "timestamp", "parent_index", "datestr"]
+                    if attr not in ["lat", "lon", "timestamp", "datestr"]
                 },
                 datestr=xr.DataArray(
                     data_lists["datestr"],
@@ -175,7 +180,6 @@ class DFO_BIOReader:
                     attrs={"timezone": [value for attr, value in self.header if attr == "time"][0]},
                 ),
                 # measurements
-                parent_index=xr.DataArray(data_lists["parent_index"], dims=["obs"]),
                 depth=xr.DataArray(data_lists["depth"], dims=["obs"]),
                 press=xr.DataArray(data_lists["press"], dims=["obs"]),
                 temp=xr.DataArray(data_lists["temp"], dims=["obs"]),
