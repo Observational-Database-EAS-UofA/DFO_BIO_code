@@ -180,10 +180,10 @@ class DFO_BIOReader:
                     attrs={"timezone": [value for attr, value in self.header if attr == "time"][0]},
                 ),
                 # measurements
-                depth=xr.DataArray(data_lists["depth"], dims=["obs"]),
-                press=xr.DataArray(data_lists["press"], dims=["obs"]),
-                temp=xr.DataArray(data_lists["temp"], dims=["obs"]),
-                psal=xr.DataArray(data_lists["psal"], dims=["obs"]),
+                depth=xr.DataArray(data_lists["depth"], dims=["depth_obs"]),
+                press=xr.DataArray(data_lists["press"], dims=["press_obs"]),
+                temp=xr.DataArray(data_lists["temp"], dims=["temp_obs"]),
+                psal=xr.DataArray(data_lists["psal"], dims=["psal_obs"]),
             ),
             attrs=dict(
                 dataset_name=self.dataset_name,
